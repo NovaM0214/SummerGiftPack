@@ -1,0 +1,299 @@
+<html><head><base href="https://interactive-comparison-cards.com/" /><title>Interactive Image Comparison Cards with Flip Effect</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background: #ffffff;
+    color: #333;
+  }
+  .card-container {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 1600px;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-x: auto;
+  }
+  .card-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 10px;
+  }
+  .card {
+    width: 280px;
+    height: 400px;
+    perspective: 1000px;
+    cursor: pointer;
+  }
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+  .card.flipped .card-inner {
+    transform: rotateY(180deg);
+  }
+  .card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  .card-back {
+    background-color: #f8f8f8;
+    transform: rotateY(180deg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  .comparison-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .image-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .image-a, .image-b, .single-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .image-b {
+    clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+  }
+  .comparison-slider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 40px;
+    transform: translateX(-50%);
+    cursor: col-resize;
+  }
+  .slider-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    background: white;
+    transform: translateX(-50%);
+  }
+  .slider-button {
+    position: absolute;
+    top: 80%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .slider-arrow {
+    width: 0;
+    height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+  }
+  .slider-arrow-left {
+    border-right: 6px solid #333;
+    margin-right: 2px;
+  }
+  .slider-arrow-right {
+    border-left: 6px solid #333;
+    margin-left: 2px;
+  }
+  .label {
+    position: absolute;
+    bottom: 10px;
+    padding: 5px 10px;
+    background: rgba(255,255,255,0.7);
+    color: #333;
+    font-size: 12px;
+    border-radius: 3px;
+  }
+  .label-a { left: 10px; }
+  .label-b { right: 10px; }
+  h3 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #2c3e50;
+  }
+  p {
+    font-size: 14px;
+    line-height: 1.4;
+    color: #34495e;
+  }
+  .click-instruction {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #7f8c8d;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="card-container" id="card-container"></div>
+
+<script>
+const cardData = [
+  {
+    imageA: 'https://raw.githubusercontent.com/NovaM0214/SummerGiftPack/main/img/clothing_boy.jpg',
+    imageB: 'https://raw.githubusercontent.com/NovaM0214/SummerGiftPack/main/img/clothing_girl.jpg',
+    labelA: '男生',
+    labelB: '女生',
+    title: '#轻薄透气防晒服#',
+    content: '蕉内联名防晒服<br/>抵御烈日与凉风 每次出行都是好天气',
+    comparison: true
+  },
+  {
+    imageA: 'https://raw.githubusercontent.com/NovaM0214/SummerGiftPack/main/img/fan_boy.jpg',
+    imageB: 'https://raw.githubusercontent.com/NovaM0214/SummerGiftPack/main/img/fan_girl.jpg',
+    labelA: '男生',
+    labelB: '女生',
+    title: '#小凉风手持风扇#',
+    content: '吹走燥热的空气 让清风伴你户外畅行',
+    comparison: true
+  },
+  {
+    imageA: 'https://raw.githubusercontent.com/NovaM0214/SummerGiftPack/main/img/umbrella_boy.jpg',
+    imageB: 'https://raw.githubusercontent.com/NovaM0214/SummerGiftPack/main/img/umbrella_girl.jpg',
+    labelA: '男生',
+    labelB: '女生',
+    title: '#晴雨两用遮阳伞#',
+    content: '挡住刺眼的紫外线 也能遮住潮湿的雨',
+    comparison: true
+  },
+  {
+    imageA: 'https://raw.githubusercontent.com/NovaM0214/SummerGiftPack/main/img/bag_boy.jpg',
+    imageB: 'https://raw.githubusercontent.com/NovaM0214/SummerGiftPack/main/img/bag_girl.jpg',
+    labelA: '男生',
+    labelB: '女生',
+    title: '#多巴胺出行包#',
+    content: '摆脱沉闷感造型 装下出发时的好心情',
+    comparison: true
+  },
+  {
+    image: 'https://raw.githubusercontent.com/NovaM0214/SummerGiftPack/main/img/fruit_tea.jpg',
+    title: '#酸甜解暑冷泡茶#',
+    content: '清爽好茶即冲即饮 酸调好喝没有负担',
+    comparison: false
+  }
+];
+
+const cardContainer = document.getElementById('card-container');
+
+cardData.forEach((data, index) => {
+  const cardWrapper = document.createElement('div');
+  cardWrapper.className = 'card-wrapper';
+  
+  const card = document.createElement('div');
+  card.className = 'card';
+  
+  if (data.comparison) {
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-front">
+          <div class="comparison-container" id="comparison-${index}">
+            <div class="image-container">
+              <img alt="${data.labelA} image of ${data.title}" src="${data.imageA}" class="image-a" width="280" height="400">
+            </div>
+            <div class="image-container">
+              <img alt="${data.labelB} image of ${data.title}" src="${data.imageB}" class="image-b" width="280" height="400">
+            </div>
+            <div class="comparison-slider">
+              <div class="slider-line"></div>
+              <div class="slider-button">
+                <div class="slider-arrow slider-arrow-left"></div>
+                <div class="slider-arrow slider-arrow-right"></div>
+              </div>
+            </div>
+            <div class="label label-a">${data.labelA}</div>
+            <div class="label label-b">${data.labelB}</div>
+          </div>
+        </div>
+        <div class="card-back">
+          <h3>${data.title}</h3>
+          <p>${data.content}</p>
+        </div>
+      </div>
+    `;
+  } else {
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-front">
+          <img alt="${data.title}" src="${data.image}" class="single-image" width="280" height="400">
+        </div>
+        <div class="card-back">
+          <h3>${data.title}</h3>
+          <p>${data.content}</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  cardWrapper.appendChild(card);
+  
+  const clickInstruction = document.createElement('div');
+  clickInstruction.className = 'click-instruction';
+  clickInstruction.textContent = '点击查看详细内容';
+  cardWrapper.appendChild(clickInstruction);
+  
+  cardContainer.appendChild(cardWrapper);
+
+  if (data.comparison) {
+    const comparisonContainer = document.getElementById(`comparison-${index}`);
+    const slider = comparisonContainer.querySelector('.comparison-slider');
+    const imageB = comparisonContainer.querySelector('.image-b');
+
+    function updateComparison(x) {
+      const containerRect = comparisonContainer.getBoundingClientRect();
+      let percentage = ((x - containerRect.left) / containerRect.width) * 100;
+      percentage = Math.max(0, Math.min(100, percentage));
+
+      imageB.style.clipPath = `polygon(${percentage}% 0, 100% 0, 100% 100%, ${percentage}% 100%)`;
+      slider.style.left = `${percentage}%`;
+    }
+
+    function handleMouseMove(e) {
+      updateComparison(e.clientX);
+    }
+
+    comparisonContainer.addEventListener('mousemove', handleMouseMove);
+    comparisonContainer.addEventListener('mouseleave', () => {
+      imageB.style.clipPath = 'polygon(50% 0, 100% 0, 100% 100%, 50% 100%)';
+      slider.style.left = '50%';
+    });
+  }
+
+  card.addEventListener('click', () => {
+    card.classList.toggle('flipped');
+  });
+});
+</script>
+</body></html>
